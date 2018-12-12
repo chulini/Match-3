@@ -72,8 +72,21 @@ public class Board : MonoBehaviour
 	{
 		if (_pointerPressed)
 		{
-			if(_game.gameState.board[coord.x,coord.y].colorID == _game.gameState.selectingColorID)
-				_game.gameState.SelectBlock(coord);
+			//A new block is selectable only if is from the current selecting color 
+			if (_game.gameState.board[coord.x, coord.y].colorID == _game.gameState.selectingColorID)
+			{
+				//If new block is already in the selected queue
+				//unselect until this block.
+				if (_game.gameState.SelectedContains(coord))
+				{
+					_game.gameState.UnselectUntilBlockCoord(coord);
+				}
+				//Otherwise is a new block so add it to the selection 
+				else
+				{
+					_game.gameState.SelectBlock(coord);	
+				}
+			}
 		}
 		else
 		{

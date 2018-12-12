@@ -32,13 +32,13 @@ public class GameState
         get { return _selectingColorID; }
     }
     
-    Queue<BlockCoordinate> _selectedBlocks;
+    Stack<BlockCoordinate> _selectedBlocks;
     
     public GameState()
     {
         _board = new BlockState[Game.boardWidth,Game.boardHeight];
         _score = 0;
-        _selectedBlocks = new Queue<BlockCoordinate>();
+        _selectedBlocks = new Stack<BlockCoordinate>();
     }
     public void Reset()
     {
@@ -68,7 +68,7 @@ public class GameState
         if (!_selectedBlocks.Contains(coord))
         {
             
-            _selectedBlocks.Enqueue(coord);
+            _selectedBlocks.Push(coord);
             _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Selected;
             
             //If is the first selected set selecting color as the color of the selected block
@@ -82,7 +82,7 @@ public class GameState
         //We can unselect only the last selected block
         if (_selectedBlocks.Peek() == coord)
         {
-            _selectedBlocks.Dequeue();
+            _selectedBlocks.Pop();
             _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
             
             //If there is no remaining blocks selected, set _selectingColorID as 0  
@@ -94,11 +94,28 @@ public class GameState
           Debug.LogWarning("We can unselect only the last selected block.");  
         }
     }
+    /// <summary>
+    /// Undo the selection until the BlockCoord indicated
+    /// </summary>
+    /// <param name="coord">Selection will be undone until this coord</param>
+    public void UnselectUntilBlockCoord(BlockCoordinate coord)
+    {
+        //Unselect the last block while last block is not the coord
+        while (LastBlockSelected() != coord)
+        {
+            UnselectBlock(LastBlockSelected());
+        }
+    } 
+
+    public bool SelectedContains(BlockCoordinate coord)
+    {
+        return _selectedBlocks.Contains(coord);
+    } 
     public void EndSelection()
     {
         while (_selectedBlocks.Count > 0)
         {
-            BlockCoordinate coord =_selectedBlocks.Dequeue();
+            BlockCoordinate coord =_selectedBlocks.Pop();
             _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
         }
     }
