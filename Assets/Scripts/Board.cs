@@ -72,7 +72,8 @@ public class Board : MonoBehaviour
 	{
 		if (_pointerPressed)
 		{
-			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Selected;
+			if(_game.gameState.board[coord.x,coord.y].colorID == _game.gameState.selectingColorID)
+				_game.gameState.SelectBlock(coord);
 		}
 		else
 		{
@@ -81,17 +82,24 @@ public class Board : MonoBehaviour
 	}
 	void OnPointerExitBlockEvent(BlockCoordinate coord)
 	{
-		_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Unselected;
+		if (_pointerPressed)
+		{
+//			//Undo selection is exits from the last selected block
+//			if(coord == _game.gameState.LastBlockSelected())
+//				_game.gameState.UnselectBlock(coord);
+		}
+		else
+		{
+			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+		}
 	}
 	void OnPointerDownBlockEvent(BlockCoordinate coord)
 	{
-		_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Selected;
+		_game.gameState.SelectBlock(coord);
 	}
 	void OnPointerUpBlockEvent(BlockCoordinate coord)
 	{
-		_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Over;
-		
-		//TODO end the line if corresponds	
+		_game.gameState.EndSelection();	
 	}
 
 	void Update()

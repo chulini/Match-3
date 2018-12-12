@@ -101,7 +101,7 @@ public class Block : MonoBehaviour
 				_borderMeshRenderer.enabled = true;
 				_borderMeshRenderer.sharedMaterial = borderSelectedMaterial;
 			}
-			else if (toSelectionState == BlockState.SelectionState.Unselected)
+			else if (toSelectionState == BlockState.SelectionState.Waiting)
 			{
 				_targetScale = .9f;
 				_borderMeshRenderer.enabled = false;

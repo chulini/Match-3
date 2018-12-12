@@ -8,6 +8,8 @@ public class Game : MonoBehaviour
 {
 	public const int boardWidth = 7;
 	public const int boardHeight = 6;
+	public const int remainingMovesAtStart = 10;
+	public const int totalColorIDs = 4;
 	GameState _gameState;
 	public GameState gameState
 	{
@@ -24,7 +26,4 @@ public class Game : MonoBehaviour
 		_board = GetComponent<Board>();
 		_board.Init(this);
 	}
-	
-	
-	 
 }

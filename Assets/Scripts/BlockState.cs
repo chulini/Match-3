@@ -37,16 +37,16 @@ public class BlockState
     
     /// <summary>
     /// A block can be:
-    /// Unselected (waiting for interaction)
+    /// Waiting (waiting for interaction)
     /// Selected (Selected to make the line)
     /// Over (With the mouse over)
     /// </summary>
-    public enum SelectionState{Unselected, Selected, Over}
+    public enum SelectionState{Waiting, Selected, Over}
     
     /// <summary>
     /// Current selection state
     /// </summary>
-    SelectionState _selectionState = SelectionState.Unselected;
+    SelectionState _selectionState = SelectionState.Waiting;
     public SelectionState selectionState
     {
         get { return _selectionState; }
