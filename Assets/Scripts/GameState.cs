@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Contains the logic state of the game
+/// </summary>
 public class GameState
 {   
     readonly BlockState[,] _board;
@@ -77,7 +80,20 @@ public class GameState
         }
     }
 
-    public void UnselectBlock(BlockCoordinate coord)
+    /// <summary>
+    /// Undo the selection until the BlockCoord indicated
+    /// </summary>
+    /// <param name="coord">Selection will be undone until this coord</param>
+    public void UnselectUntilBlockCoord(BlockCoordinate coord)
+    {
+        //Unselect the last block while last block is not the coord
+        while (LastBlockSelected() != coord)
+        {
+            UnselectBlock(LastBlockSelected());
+        }
+    } 
+    
+    void UnselectBlock(BlockCoordinate coord)
     {
         //We can unselect only the last selected block
         if (_selectedBlocks.Peek() == coord)
@@ -94,18 +110,6 @@ public class GameState
           Debug.LogWarning("We can unselect only the last selected block.");  
         }
     }
-    /// <summary>
-    /// Undo the selection until the BlockCoord indicated
-    /// </summary>
-    /// <param name="coord">Selection will be undone until this coord</param>
-    public void UnselectUntilBlockCoord(BlockCoordinate coord)
-    {
-        //Unselect the last block while last block is not the coord
-        while (LastBlockSelected() != coord)
-        {
-            UnselectBlock(LastBlockSelected());
-        }
-    } 
 
     public bool SelectedContains(BlockCoordinate coord)
     {

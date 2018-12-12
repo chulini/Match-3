@@ -37,7 +37,6 @@ public class Block : MonoBehaviour
 		get { return _myCoordinate; }
 	}
 	Transform _myTransform;
-
 	float _targetScale = .9f;
 	
 	void Awake()

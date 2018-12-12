@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/// <summary>
+/// Contains the global definitions of the game,
+/// the board and the game state and the UIManager
+/// </summary>
 [RequireComponent(typeof(Board))]
 public class Game : MonoBehaviour
 {

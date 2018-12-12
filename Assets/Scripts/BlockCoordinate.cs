@@ -42,13 +42,46 @@ public struct BlockCoordinate{
 		return new BlockCoordinate(a.x * b,a.y * b);;
 	}
 
+	/// <summary>
+	/// Returns if coordToTest is a neighbor on an hexagonal grid
+	/// </summary>
+	/// <param name="coordToTest">Coord to test</param>
+	/// <returns></returns>
+	public bool IsHexNeighbor(BlockCoordinate coordToTest)
+	{
+		if (x % 2 == 0)
+		{
+			if (coordToTest.inBounds() &&
+			    (coordToTest == (this + new BlockCoordinate(0, 1))
+			     || coordToTest == (this + new BlockCoordinate(1, 0))
+			     || coordToTest == (this + new BlockCoordinate(1, -1))
+			     || coordToTest == (this + new BlockCoordinate(0, -1))
+			     || coordToTest == (this + new BlockCoordinate(-1, -1))
+			     || coordToTest == (this + new BlockCoordinate(-1, 0))))
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if (coordToTest.inBounds() &&
+			    (coordToTest == (this + new BlockCoordinate(0, 1))
+			     || coordToTest == (this + new BlockCoordinate(1, 1))
+			     || coordToTest == (this + new BlockCoordinate(1, 0))
+			     || coordToTest == (this + new BlockCoordinate(0, -1))
+			     || coordToTest == (this + new BlockCoordinate(-1, 0))
+			     || coordToTest == (this + new BlockCoordinate(-1, +1))))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public override string ToString(){
 		return "BlockCoordinate("+x+","+y+")";
 	}
-	public int HorizontalSquareDistance(BlockCoordinate b){
-		int deltaX = Mathf.Abs (b.x - this.x);
-		int deltaY = Mathf.Abs (b.y - this.y);
-		return Mathf.Max (deltaX, deltaY);
-	}
+	
 }
 

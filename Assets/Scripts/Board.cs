@@ -45,7 +45,7 @@ public class Board : MonoBehaviour
 		{
 			for (int y = 0; y < Game.boardHeight; y++)
 			{
-				_game.gameState.board[x, y].colorID = Random.Range(1, 5);
+				_game.gameState.board[x, y].colorID = Random.Range(1, Game.totalColorIDs+1);
 			}
 		}
 	}
@@ -72,7 +72,7 @@ public class Board : MonoBehaviour
 	{
 		if (_pointerPressed)
 		{
-			//A new block is selectable only if is from the current selecting color 
+			//A new block is selectable only if is from the current selecting color
 			if (_game.gameState.board[coord.x, coord.y].colorID == _game.gameState.selectingColorID)
 			{
 				//If new block is already in the selected queue
@@ -81,10 +81,12 @@ public class Board : MonoBehaviour
 				{
 					_game.gameState.UnselectUntilBlockCoord(coord);
 				}
-				//Otherwise is a new block so add it to the selection 
+				//Otherwise is a new block 
 				else
 				{
-					_game.gameState.SelectBlock(coord);	
+					//Select only if is neighbor from the last selected block 
+					if(_game.gameState.LastBlockSelected().IsHexNeighbor(coord))
+						_game.gameState.SelectBlock(coord);	
 				}
 			}
 		}
@@ -95,13 +97,7 @@ public class Board : MonoBehaviour
 	}
 	void OnPointerExitBlockEvent(BlockCoordinate coord)
 	{
-		if (_pointerPressed)
-		{
-//			//Undo selection is exits from the last selected block
-//			if(coord == _game.gameState.LastBlockSelected())
-//				_game.gameState.UnselectBlock(coord);
-		}
-		else
+		if (!_pointerPressed)
 		{
 			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
 		}
