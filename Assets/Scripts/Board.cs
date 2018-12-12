@@ -2,26 +2,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Instantiates the blocks on the scene,
+/// listen to pointer events and implements the game logic
+/// updating the GameState 
+/// </summary>
 public class Board : MonoBehaviour
 {
 	[SerializeField] GameObject _blockPrefab;
-	GameState _gameState;
-	Block[,] _blockInstances;
-	Transform _myTransform;
-
+	static Game _game;
+	static Block[,] _blockInstances;
+	static Transform _myTransform;
+	static bool _pointerPressed = false;
+	
 	void Awake()
 	{
 		_myTransform = transform;
 	}
-
-
+	
 	/// <summary>
-	/// Initializes a new board on the 
+	/// Initializes a new board on the scene
 	/// </summary>
-	/// <param name="gameState"></param>
-	public void Init(GameState gameState)
+	/// <param name="game">A reference to the Game instance</param>
+	public void Init(Game game)
 	{
-		_gameState = gameState;
+		_game = game;
 		_blockInstances = new Block[Game.boardWidth,Game.boardHeight];
 		
 		//Instantiate board
@@ -34,6 +39,68 @@ public class Board : MonoBehaviour
 				_blockInstances[x,y].transform.SetParent(_myTransform);
 			}	
 		}
+		
+		//Set initial board state as random blocks
+		for (int x = 0; x < Game.boardWidth; x++)
+		{
+			for (int y = 0; y < Game.boardHeight; y++)
+			{
+				_game.gameState.board[x, y].colorID = Random.Range(1, 5);
+			}
+		}
+	}
+
+	void OnEnable()
+	{
+		BlockPointerEvents.PointerEnterBlockEvent += OnPointerEnterBlockEvent;
+		BlockPointerEvents.PointerExitBlockEvent += OnPointerExitBlockEvent;
+		BlockPointerEvents.PointerDownBlockEvent += OnPointerDownBlockEvent;
+		BlockPointerEvents.PointerUpBlockEvent += OnPointerUpBlockEvent;
+	}
+
+
+	void OnDisable()
+	{
+		BlockPointerEvents.PointerEnterBlockEvent -= OnPointerEnterBlockEvent;
+		BlockPointerEvents.PointerExitBlockEvent -= OnPointerExitBlockEvent;
+		BlockPointerEvents.PointerDownBlockEvent -= OnPointerDownBlockEvent;
+		BlockPointerEvents.PointerUpBlockEvent -= OnPointerUpBlockEvent;
+	}
+	
+	
+	void OnPointerEnterBlockEvent(BlockCoordinate coord)
+	{
+		if (_pointerPressed)
+		{
+			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Selected;
+		}
+		else
+		{
+			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Over;
+		}
+	}
+	void OnPointerExitBlockEvent(BlockCoordinate coord)
+	{
+		_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Unselected;
+	}
+	void OnPointerDownBlockEvent(BlockCoordinate coord)
+	{
+		_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Selected;
+	}
+	void OnPointerUpBlockEvent(BlockCoordinate coord)
+	{
+		_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Over;
+		
+		//TODO end the line if corresponds	
+	}
+
+	void Update()
+	{
+		if (Input.GetMouseButtonDown(0))
+			_pointerPressed = true;
+		
+		if (Input.GetMouseButtonUp(0))
+			_pointerPressed = false;
 	}
 	
 }

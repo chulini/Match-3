@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+/// <summary>
+/// Struct that works as a Vector2 but with integers instead of float
+/// </summary>
 public struct BlockCoordinate{
 	public int x;
 	public int y;

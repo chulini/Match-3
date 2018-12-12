@@ -21,9 +21,8 @@ GameObject:
   - component: {fileID: 4037255593997704}
   - component: {fileID: 33520171640933802}
   - component: {fileID: 23904936919605556}
-  - component: {fileID: 64227610989884120}
   m_Layer: 0
-  m_Name: Graphics Hex Selector
+  m_Name: Graphics Hex Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40,7 +39,7 @@ GameObject:
   - component: {fileID: 33510005869816142}
   - component: {fileID: 23463303378284146}
   m_Layer: 0
-  m_Name: Graphics 3D Cube
+  m_Name: Graphics 3D Bg Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -55,6 +54,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4495640719564826}
   - component: {fileID: 65245743396548754}
+  - component: {fileID: 114304746614203216}
   - component: {fileID: 114738520569926552}
   m_Layer: 0
   m_Name: Block
@@ -111,12 +111,12 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1088728227999476}
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: d3085810a634f4444bdd9db4d7f9b307, type: 2}
@@ -145,16 +145,16 @@ MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1054334926700868}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: b7134177f08124243af3ec7902e3f4bb, type: 2}
+  - {fileID: 2100000, guid: 2fdf28feae54a2245808dd154330cfa3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -188,20 +188,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1054334926700868}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!64 &64227610989884120
-MeshCollider:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1054334926700868}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 0
-  m_CookingOptions: 14
-  m_SkinWidth: 0.01
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!65 &65245743396548754
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -214,6 +200,17 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114304746614203216
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1974278382743750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a02f1f6f5da06c94197d5bf205adfb37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114738520569926552
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -225,4 +222,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 746c1f53a97313a49b8f8d6ac6711d81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _meshRenderer: {fileID: 23463303378284146}
+  _bgBlockMeshRenderer: {fileID: 23463303378284146}
+  _bgBlockMeshTransform: {fileID: 4532564506031380}
+  _borderMeshRenderer: {fileID: 23904936919605556}
+  _borderTransform: {fileID: 4037255593997704}
+  borderSelectedMaterial: {fileID: 2100000, guid: 2fdf28feae54a2245808dd154330cfa3,
+    type: 2}
+  borderOverMaterial: {fileID: 2100000, guid: b7134177f08124243af3ec7902e3f4bb, type: 2}

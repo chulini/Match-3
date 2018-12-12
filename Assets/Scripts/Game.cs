@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 [RequireComponent(typeof(Board))]
 public class Game : MonoBehaviour
 {
-	public static readonly int boardWidth = 7;
-	public static readonly int boardHeight = 6;
+	public const int boardWidth = 7;
+	public const int boardHeight = 6;
 	GameState _gameState;
-	Board _board;
+	public GameState gameState
+	{
+		get { return _gameState; }
+	}
+
+	static Board _board;
 	void Awake()
 	{
 		if(_gameState == null)
@@ -16,7 +22,7 @@ public class Game : MonoBehaviour
 		
 		_gameState.Reset();
 		_board = GetComponent<Board>();
-		_board.Init(_gameState);
+		_board.Init(this);
 	}
 	
 	
