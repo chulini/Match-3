@@ -52,7 +52,7 @@ public class Board : MonoBehaviour
 		{
 			for (int y = 0; y < Game.boardHeight; y++)
 			{
-				_game.gameState.board[x, y].colorID = 1; //Random.Range(1, Game.totalColorIDs + 1);
+				_game.gameState.board[x, y].colorID = Random.Range(1, Game.totalColorIDs + 1);
 			}
 
 			//Invisible temporary slots to make fall animation
@@ -241,7 +241,6 @@ public class Board : MonoBehaviour
 				{
 					BlockCoordinate receivingCoord = coord;
 					BlockCoordinate fallingCoord = GetFallingCoord(receivingCoord);
-					Debug.Log(receivingCoord+" receives "+fallingCoord);
 					Block receivingBlock = _blockInstances[receivingCoord.x, receivingCoord.y];
 					Block fallingBlock = _blockInstances[fallingCoord.x, fallingCoord.y];
 					
@@ -250,7 +249,7 @@ public class Board : MonoBehaviour
 					receivingBlock.SetBgColorGameObject(fallingBlock.GetBgColorGameObject());
 					receivingBlock.StartFallBgColorAnimation();
 					
-					receivingBlock.Init(receivingCoord);
+					//receivingBlock.Init(receivingCoord);
 					receivingBlock.gameObject.name = "Block (" + receivingCoord.x + "," + receivingCoord.y + ")";
 					_game.gameState.board[receivingCoord.x, receivingCoord.y].colorID =  _game.gameState.board[fallingCoord.x, fallingCoord.y].colorID;
 					_game.gameState.board[receivingCoord.x, receivingCoord.y].state = BlockState.State.Waiting;
@@ -260,9 +259,6 @@ public class Board : MonoBehaviour
 					fallingBlock.Init(fallingCoord);
 					fallingBlock.InstantiateBgColorGameObject();
 					
-
-//					fallingBlock.InstantiateBgColorGameObject();
-//					_game.gameState.board[fallingCoord.x, fallingCoord.y].colorID = 0;					
 				}
 			}
 		}
@@ -274,34 +270,6 @@ public class Board : MonoBehaviour
 				_game.gameState.board[x, y].colorID = 0;
 		
 
-
-
-
-//
-//		//Relink the bgColorObject of each block from bottom to top and trigger fall animation
-//		for (int i = 0; i < waitingNewColorBlocks.Count; i++)
-//		{
-//			
-//			BlockCoordinate receivingCoord = waitingNewColorBlocks[i];
-//			BlockCoordinate fallingCoord = GetFallingCoord(receivingCoord);
-//			Debug.Log("receivingCoord "+receivingCoord+"\t"+fallingCoord);
-//			Block receivingBlock = _blockInstances[receivingCoord.x, receivingCoord.y];
-//			Block fallingBlock = _blockInstances[fallingCoord.x, fallingCoord.y];
-//			GameObject fallingBgColorGameObject = fallingBlock.GetBgColorGameObject();
-//			GameObject receivingBgColorGameObject = receivingBlock.GetBgColorGameObject();
-//			Destroy(receivingBgColorGameObject);
-//			receivingBlock.SetBgColorGameObject(fallingBgColorGameObject);
-//			receivingBlock.StartFallBgColorAnimation();
-//
-//			_game.gameState.board[receivingCoord.x, receivingCoord.y].colorID =
-//				_game.gameState.board[fallingCoord.x, fallingCoord.y].colorID; 
-//			_game.gameState.board[receivingCoord.x, receivingCoord.y].state = BlockState.State.Waiting;
-//			
-////			_game.gameState.board[fallingCoord.x, fallingCoord.y].colorID = 0;
-//		}
-//		
-//		_linkedCoords.Clear();
-		
 	}
 	
 

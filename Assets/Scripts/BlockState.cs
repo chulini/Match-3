@@ -64,7 +64,7 @@ public class BlockState
     /// <summary>
     /// The current color of the block
     /// </summary>
-    int _colorID = 0;
+    int _colorID = -1;
     public int colorID
     {
         get { return _colorID; }

@@ -19,9 +19,6 @@ public class Block : MonoBehaviour
 		if(ExplodeBlockAnimationEndedEvent != null)
 			ExplodeBlockAnimationEndedEvent(coord);
 	}
-
-	
-	
 	/// <summary>
 	/// Horizontal separation between blocks
 	/// </summary>
@@ -43,11 +40,14 @@ public class Block : MonoBehaviour
 	
 	static Material[] _blockMaterials;
 
-	BlockCoordinate _myCoordinate;
 	
+	BlockCoordinate _myCoordinate;
 	GameObject _bgColorGameObject;
 	MeshRenderer _bgColorMeshRenderer;
 	Transform _bgColorMeshTransform;
+	
+	
+	BoxCollider _myBoxCollider;
 	public BlockCoordinate myCoordinate
 	{
 		get { return _myCoordinate; }
@@ -61,6 +61,7 @@ public class Block : MonoBehaviour
 			_blockMaterials = Resources.LoadAll<Material>("Materials/Block") as Material[];
 
 		_myTransform = GetComponent<Transform>();
+		_myBoxCollider = GetComponent<BoxCollider>();
 	}
 
 	public void Init(BlockCoordinate coord)
@@ -70,7 +71,12 @@ public class Block : MonoBehaviour
 		_positionInHexGid = _myTransform.position; 
 		InstantiateBgColorGameObject();
 		_bgColorMeshTransform.position = _myTransform.position;
-		_bgColorMeshTransform.localScale = Vector3.zero;
+
+		if (myCoordinate.y >= Game.boardHeight)
+		{
+			_myBoxCollider.enabled = false;
+			_bgColorMeshRenderer.enabled = false;
+		}
 	}
 
 	Vector3 Get3DPositionForCoordinate(BlockCoordinate coord)
@@ -87,12 +93,6 @@ public class Block : MonoBehaviour
 		return new Vector3(_myCoordinate.x * hSeparation * 1.5f, _myCoordinate.y * vSeparation * 2f+yOffset);
 	}
 
-	void ResetBgColorTransform()
-	{
-		_bgColorMeshTransform.position = _positionInHexGid;
-		_targetScale = .8f;
-	}
-	
 
 	public void StartFallBgColorAnimation()
 	{
@@ -117,6 +117,7 @@ public class Block : MonoBehaviour
 		_bgColorGameObject = null;
 		_bgColorMeshRenderer = null;
 		_bgColorMeshTransform = null;
+		
 	}
 	public void InstantiateBgColorGameObject()
 	{
@@ -134,8 +135,10 @@ public class Block : MonoBehaviour
 		_bgColorMeshTransform = _bgColorGameObject.transform;
 		_bgColorMeshTransform.SetParent(_myTransform);
 	}
+
 	public GameObject GetBgColorGameObject()
 	{
+		_bgColorMeshRenderer.enabled = true;
 		return _bgColorGameObject;
 	}
 
@@ -157,10 +160,10 @@ public class Block : MonoBehaviour
 	{
 		if (coord == _myCoordinate)
 		{
-			
-			if(toColorID != 0)
+			if (toColorID != 0)
+			{
 				_bgColorMeshRenderer.sharedMaterial = _blockMaterials[toColorID];
-			
+			}
 		}
 	}
 	void OnBlockSelectionChangedEvent(BlockCoordinate coord, BlockState.State fromState, BlockState.State toState)
