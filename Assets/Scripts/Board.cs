@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Instantiates the blocks on the scene,
+/// Instantiate the blocks on the scene,
 /// listen to pointer events and implements the game logic
 /// updating the GameState 
 /// </summary>
@@ -169,15 +169,11 @@ public class Board : MonoBehaviour
 				return;
 			}
 		}
-		
-		
+
 		//If we didn't returned it means all animating blocks already exploded
 		//So we need to trigger falling blocks animation
 		TriggerFallAnimations();
 	}
-
-	
-	
 
 	/// <summary>
 	/// Returns the coord of the block that will fall in originCoord
@@ -215,7 +211,7 @@ public class Board : MonoBehaviour
 
 		return extraColorsNeeded;
 	}
-
+	
 	void AddExtraColorsOnTop(int x, int amountOfNewColors)
 	{
 		for (int y = 0; y < amountOfNewColors; y++)

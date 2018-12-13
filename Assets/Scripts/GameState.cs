@@ -21,6 +21,32 @@ public class GameState
             NewLineEvent(success,blocksInTheLine);
     }
     
+    public delegate void RemainingMovesUpdatedDelegate(int remainingMoves);
+    public static event RemainingMovesUpdatedDelegate RemainingMovesUpdatedEvent;
+    
+    /// <summary>
+    /// Triggers an event when remainingMoves has changed
+    /// </summary>
+    /// <param name="remainingMoves"></param>
+    public static void RemainingMovesUpdated(int remainingMoves){
+        if(RemainingMovesUpdatedEvent != null)
+            RemainingMovesUpdatedEvent(remainingMoves);
+    }
+    
+    
+    public delegate void GameOverDelegate();
+    public static event GameOverDelegate GameOverEvent;
+    /// <summary>
+    /// Triggers game over
+    /// </summary>
+    static void GameOver(){
+        if(GameOverEvent != null)
+            GameOverEvent();
+    }
+
+    
+    
+
     
     readonly BlockState[,] _board;
     public BlockState[,] board
@@ -50,6 +76,7 @@ public class GameState
         get { return _selectingColorID; }
     }
     
+    //Stack containing the blocks selected
     Stack<BlockCoordinate> _selectedBlocks;
     
     public GameState()
@@ -57,6 +84,7 @@ public class GameState
         _board = new BlockState[Game.boardWidth,Game.boardHeight*2];
         _score = 0;
         _selectedBlocks = new Stack<BlockCoordinate>();
+        
     }
     public void Reset()
     {
@@ -69,6 +97,8 @@ public class GameState
         }
         _score = 0;
         _remainingMoves = Game.remainingMovesAtStart;
+        RemainingMovesUpdated(_remainingMoves);
+        
         _selectedBlocks.Clear();
     }
 
@@ -142,7 +172,10 @@ public class GameState
         //Otherwise deselect all and trigger a failed line event
         if (_selectedBlocks.Count >= 3)
         {
-            _score += _selectedBlocks.Count;
+            _score += 2+ Mathf.FloorToInt(Mathf.Pow(1.5f,_selectedBlocks.Count));
+            _remainingMoves--;
+            RemainingMovesUpdated(_remainingMoves);
+            
             //Make a list with the selected block to send an event with them
             List<BlockCoordinate> blocksInTheLine = new List<BlockCoordinate>();
             while (_selectedBlocks.Count > 0)
@@ -155,6 +188,9 @@ public class GameState
 
             MarkUpwardsBlocksAsWaitingForNewColor(blocksInTheLine);
             NewLine(true,blocksInTheLine);
+
+            if (_remainingMoves == 0)
+                GameOver();
         }
         else
         {
