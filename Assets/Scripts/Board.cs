@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -14,12 +15,16 @@ public class Board : MonoBehaviour
 	static Block[,] _blockInstances;
 	static Transform _myTransform;
 	static bool _pointerPressed = false;
+	static List<BlockCoordinate> _animatingBlocks;
+	
+	
+	static List<BlockCoordinate> _linkedCoords;
 	
 	void Awake()
 	{
 		_myTransform = transform;
 	}
-	
+
 	/// <summary>
 	/// Initializes a new board on the scene
 	/// </summary>
@@ -27,25 +32,33 @@ public class Board : MonoBehaviour
 	public void Init(Game game)
 	{
 		_game = game;
-		_blockInstances = new Block[Game.boardWidth,Game.boardHeight];
-		
+		_blockInstances = new Block[Game.boardWidth, Game.boardHeight * 2];
+		_linkedCoords = new List<BlockCoordinate>();
+
 		//Instantiate board
-		for (int x = 0; x < Game.boardWidth; x++)
+		for (int x = 0; x < _blockInstances.GetLength(0); x++)
 		{
-			for (int y = 0; y < Game.boardHeight; y++)
+			for (int y = 0; y < _blockInstances.GetLength(1); y++)
 			{
 				_blockInstances[x, y] = (Instantiate(_blockPrefab) as GameObject).GetComponent<Block>();
-				_blockInstances[x,y].Init(new BlockCoordinate(x,y),this);
-				_blockInstances[x,y].transform.SetParent(_myTransform);
-			}	
+				_blockInstances[x, y].Init(new BlockCoordinate(x, y));
+				_blockInstances[x, y].transform.SetParent(_myTransform);
+				_blockInstances[x, y].gameObject.name = "Block (" + x + "," + y + ")";
+			}
 		}
-		
+
 		//Set initial board state as random blocks
-		for (int x = 0; x < Game.boardWidth; x++)
+		for (int x = 0; x < _game.gameState.board.GetLength(0); x++)
 		{
 			for (int y = 0; y < Game.boardHeight; y++)
 			{
-				_game.gameState.board[x, y].colorID = Random.Range(1, Game.totalColorIDs+1);
+				_game.gameState.board[x, y].colorID = 1; //Random.Range(1, Game.totalColorIDs + 1);
+			}
+
+			//Invisible temporary slots to make fall animation
+			for (int y = Game.boardHeight; y < Game.boardHeight * 2; y++)
+			{
+				_game.gameState.board[x, y].colorID = 0;
 			}
 		}
 	}
@@ -56,8 +69,11 @@ public class Board : MonoBehaviour
 		BlockPointerEvents.PointerExitBlockEvent += OnPointerExitBlockEvent;
 		BlockPointerEvents.PointerDownBlockEvent += OnPointerDownBlockEvent;
 		BlockPointerEvents.PointerUpBlockEvent += OnPointerUpBlockEvent;
+		GameState.NewLineEvent += OnNewLineEvent;
+		Block.ExplodeBlockAnimationEndedEvent += OnExplodeBlockAnimationEndedEvent;
 	}
 
+	
 
 	void OnDisable()
 	{
@@ -65,12 +81,15 @@ public class Board : MonoBehaviour
 		BlockPointerEvents.PointerExitBlockEvent -= OnPointerExitBlockEvent;
 		BlockPointerEvents.PointerDownBlockEvent -= OnPointerDownBlockEvent;
 		BlockPointerEvents.PointerUpBlockEvent -= OnPointerUpBlockEvent;
+		GameState.NewLineEvent -= OnNewLineEvent;
+		Block.ExplodeBlockAnimationEndedEvent -= OnExplodeBlockAnimationEndedEvent;
 	}
 	
 	
 	void OnPointerEnterBlockEvent(BlockCoordinate coord)
 	{
-		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
+		if (_game.gameState.board[coord.x, coord.y].state != BlockState.State.ExplodeAnimation
+		    &&_game.gameState.board[coord.x, coord.y].state != BlockState.State.WaitingForNewColorAnimation)
 		{
 			if (_pointerPressed)
 			{
@@ -94,45 +113,198 @@ public class Board : MonoBehaviour
 			}
 			else
 			{
-				_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Over;
+				
+				_game.gameState.board[coord.x, coord.y].state = BlockState.State.Over;
 			}
 		}
 	}
 	void OnPointerExitBlockEvent(BlockCoordinate coord)
 	{
-		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
+		if (_game.gameState.board[coord.x, coord.y].state != BlockState.State.ExplodeAnimation
+		    &&_game.gameState.board[coord.x, coord.y].state != BlockState.State.WaitingForNewColorAnimation)
 		{
 			if (!_pointerPressed)
 			{
-				_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+				_game.gameState.board[coord.x, coord.y].state = BlockState.State.Waiting;
 			}
 		}
 	}
 	void OnPointerDownBlockEvent(BlockCoordinate coord)
 	{
-		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
+		if (_game.gameState.board[coord.x, coord.y].state != BlockState.State.ExplodeAnimation
+		    &&_game.gameState.board[coord.x, coord.y].state != BlockState.State.WaitingForNewColorAnimation)
 		{
 			_game.gameState.SelectBlock(coord);
 		}
 	}
 	void OnPointerUpBlockEvent(BlockCoordinate coord)
 	{
-		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
+		if (_game.gameState.board[coord.x, coord.y].state != BlockState.State.ExplodeAnimation
+		    &&_game.gameState.board[coord.x, coord.y].state != BlockState.State.WaitingForNewColorAnimation)
 		{
 			_game.gameState.EndSelection();
 		}
 	}
-	/// <summary>
-	/// If the upwards block exists returns the up neighbour one
-	/// otherwise create a new one on top of the block on coord
-	/// </summary>
-	/// <param name="coord"></param>
-	/// <returns>Graphics 3D Cube to make the fall animation</returns>
-	Block GetUpwardsBlock(BlockCoordinate coord)
+
+	
+	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine)
 	{
-		//TODO
-		return null;
+		if(success)
+			_animatingBlocks = blocksInTheLine;
 	}
+	void OnExplodeBlockAnimationEndedEvent(BlockCoordinate coord)
+	{
+		//Set exploded coord as WaitingForNewColorAnimation
+		_game.gameState.board[coord.x, coord.y].state = BlockState.State.WaitingForNewColorAnimation;
+		
+		
+		
+		
+		//if not all animating blocks are WaitingForNewColorAnimation return and do nothing else
+		for (int i = 0; i < _animatingBlocks.Count; i++)
+		{
+			if (_game.gameState.board[_animatingBlocks[i].x, _animatingBlocks[i].y].state !=
+			    BlockState.State.WaitingForNewColorAnimation)
+			{
+				return;
+			}
+		}
+		
+		
+		//If we didn't returned it means all animating blocks already exploded
+		//So we need to trigger falling blocks animation
+		TriggerFallAnimations();
+	}
+
+	
+	
+
+	/// <summary>
+	/// Returns the coord of the block that will fall in originCoord
+	/// </summary>
+	/// <param name="originCoord">Coordinate that will receive a new color</param>
+	/// <returns></returns>
+	BlockCoordinate GetFallingCoord(BlockCoordinate originCoord)
+	{
+		
+		for (int y = originCoord.y + 1; y < _game.gameState.board.GetLength(1); y++)
+		{
+			BlockCoordinate coord = new BlockCoordinate(originCoord.x, y); 
+			if (_game.gameState.board[coord.x, coord.y].colorID != 0 && !_linkedCoords.Contains(coord))
+			{
+				_linkedCoords.Add(coord);
+				return coord;
+			}
+		}
+
+		Debug.LogError("There is no color to fall @ "+originCoord);
+		return new BlockCoordinate(9999,9999);
+	}
+
+	int GetExtraColorsNeeded(int x)
+	{
+		int extraColorsNeeded = 0;
+		for (int y = 0; y < Game.boardHeight; y++)
+		{
+			if (_game.gameState.board[x, y].colorID == 0)
+			{
+				extraColorsNeeded++;
+			}
+			
+		}
+
+		return extraColorsNeeded;
+	}
+
+	void AddExtraColorsOnTop(int x, int amountOfNewColors)
+	{
+		for (int y = 0; y < amountOfNewColors; y++)
+		{
+			_game.gameState.board[x, Game.boardHeight + y].colorID = Random.Range(1, Game.totalColorIDs + 1);
+		}
+	}
+	
+	void TriggerFallAnimations()
+	{
+		//Add a new color at the top of the board if needed
+		for (int x = 0; x < Game.boardWidth; x++)
+			AddExtraColorsOnTop(x, GetExtraColorsNeeded(x));
+
+		//Relink bgColorGameObject between receiving ans falling coords
+		//From bottom to top
+		for (int x = 0; x < Game.boardWidth; x++)
+		{
+			for (int y = 0; y < Game.boardHeight; y++)
+			{
+				BlockCoordinate coord = new BlockCoordinate(x, y);
+				if (_game.gameState.board[coord.x, coord.y].state == BlockState.State.WaitingForNewColorAnimation)
+				{
+					BlockCoordinate receivingCoord = coord;
+					BlockCoordinate fallingCoord = GetFallingCoord(receivingCoord);
+					Debug.Log(receivingCoord+" receives "+fallingCoord);
+					Block receivingBlock = _blockInstances[receivingCoord.x, receivingCoord.y];
+					Block fallingBlock = _blockInstances[fallingCoord.x, fallingCoord.y];
+					
+					//Link receivingBlock with falling blick
+					receivingBlock.DestroyBgColorGameObject();
+					receivingBlock.SetBgColorGameObject(fallingBlock.GetBgColorGameObject());
+					receivingBlock.StartFallBgColorAnimation();
+					
+					receivingBlock.Init(receivingCoord);
+					receivingBlock.gameObject.name = "Block (" + receivingCoord.x + "," + receivingCoord.y + ")";
+					_game.gameState.board[receivingCoord.x, receivingCoord.y].colorID =  _game.gameState.board[fallingCoord.x, fallingCoord.y].colorID;
+					_game.gameState.board[receivingCoord.x, receivingCoord.y].state = BlockState.State.Waiting;
+					
+					//Reset bg color of the falling block 
+					fallingBlock.UnlinkBgColor();
+					fallingBlock.Init(fallingCoord);
+					fallingBlock.InstantiateBgColorGameObject();
+					
+
+//					fallingBlock.InstantiateBgColorGameObject();
+//					_game.gameState.board[fallingCoord.x, fallingCoord.y].colorID = 0;					
+				}
+			}
+		}
+		_linkedCoords.Clear();
+		
+		//Clear top board
+		for (int x = 0; x < Game.boardWidth; x++)
+			for (int y = Game.boardHeight; y < _game.gameState.board.GetLength(1); y++)
+				_game.gameState.board[x, y].colorID = 0;
+		
+
+
+
+
+//
+//		//Relink the bgColorObject of each block from bottom to top and trigger fall animation
+//		for (int i = 0; i < waitingNewColorBlocks.Count; i++)
+//		{
+//			
+//			BlockCoordinate receivingCoord = waitingNewColorBlocks[i];
+//			BlockCoordinate fallingCoord = GetFallingCoord(receivingCoord);
+//			Debug.Log("receivingCoord "+receivingCoord+"\t"+fallingCoord);
+//			Block receivingBlock = _blockInstances[receivingCoord.x, receivingCoord.y];
+//			Block fallingBlock = _blockInstances[fallingCoord.x, fallingCoord.y];
+//			GameObject fallingBgColorGameObject = fallingBlock.GetBgColorGameObject();
+//			GameObject receivingBgColorGameObject = receivingBlock.GetBgColorGameObject();
+//			Destroy(receivingBgColorGameObject);
+//			receivingBlock.SetBgColorGameObject(fallingBgColorGameObject);
+//			receivingBlock.StartFallBgColorAnimation();
+//
+//			_game.gameState.board[receivingCoord.x, receivingCoord.y].colorID =
+//				_game.gameState.board[fallingCoord.x, fallingCoord.y].colorID; 
+//			_game.gameState.board[receivingCoord.x, receivingCoord.y].state = BlockState.State.Waiting;
+//			
+////			_game.gameState.board[fallingCoord.x, fallingCoord.y].colorID = 0;
+//		}
+//		
+//		_linkedCoords.Clear();
+		
+	}
+	
+
 	void Update()
 	{
 		if (Input.GetMouseButtonDown(0))

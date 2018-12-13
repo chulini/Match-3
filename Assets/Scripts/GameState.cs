@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -53,7 +54,7 @@ public class GameState
     
     public GameState()
     {
-        _board = new BlockState[Game.boardWidth,Game.boardHeight];
+        _board = new BlockState[Game.boardWidth,Game.boardHeight*2];
         _score = 0;
         _selectedBlocks = new Stack<BlockCoordinate>();
     }
@@ -61,7 +62,7 @@ public class GameState
     {
         for (int x = 0; x < Game.boardWidth; x++)
         {
-            for (int y = 0; y < Game.boardHeight; y++)
+            for (int y = 0; y < _board.GetLength(1); y++)
             {
                 _board[x, y] = new BlockState(new BlockCoordinate(x,y));
             }
@@ -86,7 +87,7 @@ public class GameState
         {
             
             _selectedBlocks.Push(coord);
-            _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Selected;
+            _board[coord.x, coord.y].state = BlockState.State.Selected;
             
             //If is the first selected set selecting color as the color of the selected block
             if (_selectedBlocks.Count == 1)
@@ -113,7 +114,7 @@ public class GameState
         if (_selectedBlocks.Peek() == coord)
         {
             _selectedBlocks.Pop();
-            _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+            _board[coord.x, coord.y].state = BlockState.State.Waiting;
             
             //If there is no remaining blocks selected, set _selectingColorID as 0  
             if (_selectedBlocks.Count == 0)
@@ -148,9 +149,11 @@ public class GameState
             {
                 BlockCoordinate coord =_selectedBlocks.Pop();
                 _board[coord.x, coord.y].colorID = 0;
-                _board[coord.x, coord.y].selectionState = BlockState.SelectionState.InAnimation;
+                _board[coord.x, coord.y].state = BlockState.State.ExplodeAnimation;
                 blocksInTheLine.Add(coord);
             }
+
+            MarkUpwardsBlocksAsWaitingForNewColor(blocksInTheLine);
             NewLine(true,blocksInTheLine);
         }
         else
@@ -159,12 +162,31 @@ public class GameState
             while (_selectedBlocks.Count > 0)
             {
                 BlockCoordinate coord =_selectedBlocks.Pop();
-                _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+                _board[coord.x, coord.y].state = BlockState.State.Waiting;
                 blocksInTheLine.Add(coord);
             }    
             NewLine(false,blocksInTheLine);
         }
         
+    }
+
+    /// <summary>
+    /// Each time a block is exploded, all upwards block should be in state WaitingForNewColorAnimation 
+    /// </summary>
+    /// <param name="blocksInTheLine">A list with all the blocks in the line</param>
+    void MarkUpwardsBlocksAsWaitingForNewColor(List<BlockCoordinate> blocksInTheLine)
+    {
+        //Sort from bottom to top so in case of vertical concave line the top blocks 
+        //don't be overwritten as WaitingForNewColorAnimation inst1ead of ExplodeAnimation
+        blocksInTheLine = blocksInTheLine.OrderBy(a => a.y).ToList();
+        foreach (BlockCoordinate startingCoord in blocksInTheLine)
+        {
+            _board[startingCoord.x, startingCoord.y].state = BlockState.State.ExplodeAnimation;
+            for (int y = 1; startingCoord.y + y < Game.boardHeight; y++)
+            {
+                _board[startingCoord.x, startingCoord.y + y].state = BlockState.State.WaitingForNewColorAnimation;
+            }
+        }
     }
 
     public BlockCoordinate LastBlockSelected()

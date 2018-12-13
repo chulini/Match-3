@@ -22,44 +22,42 @@ public class BlockState
     }
     
     
-    public delegate void BlockSelectionChangedDelegate(BlockCoordinate coord, SelectionState fromSelectionState, SelectionState toSelectionState);
+    public delegate void BlockSelectionChangedDelegate(BlockCoordinate coord, State fromState, State toState);
     public static event BlockSelectionChangedDelegate BlockSelectionChangedEvent;
     /// <summary>
     /// Triggers an event when a block colorID is changed
     /// </summary>
     /// <param name="coord">Coordinate of the block</param>
-    /// <param name="fromSelectionState">Last selection state</param>
-    /// <param name="toSelectionState">New selection state</param>
-    static void BlockSelectionChanged(BlockCoordinate coord, SelectionState fromSelectionState, SelectionState toSelectionState){
+    /// <param name="fromState">Last selection state</param>
+    /// <param name="toState">New selection state</param>
+    static void BlockSelectionChanged(BlockCoordinate coord, State fromState, State toState){
         if(BlockSelectionChangedEvent != null)
-            BlockSelectionChangedEvent(coord,fromSelectionState,toSelectionState);
+            BlockSelectionChangedEvent(coord,fromState,toState);
     }
     
     /// <summary>
     /// A block can be:
     /// Waiting (waiting for interaction)
-    /// Selected (Selected to make the line)
+    /// Selected (Selected to be part of the line)
     /// Over (With the mouse over)
-    /// InAnimation (The block is being animated)
+    /// ExplodeAnimation (The block is exploding)
+    /// WaitingForNewColorAnimation (The block will change color)
     /// </summary>
-    public enum SelectionState{Waiting, Selected, Over, InAnimation}
+    public enum State{Waiting, Selected, Over, ExplodeAnimation, WaitingForNewColorAnimation}
     
     /// <summary>
     /// Current selection state
     /// </summary>
-    SelectionState _selectionState = SelectionState.Waiting;
-    public SelectionState selectionState
+    State _state = State.Waiting;
+    public State state
     {
-        get { return _selectionState; }
+        get { return _state; }
         set
         {
-            if (_selectionState != value)
-            {
-                SelectionState fromSelectionState = _selectionState;
-                _selectionState = value;
-                BlockSelectionChanged(_coordinate, fromSelectionState, _selectionState);
-                
-            }
+            if (_state == value) return;
+            State fromState = _state;
+            _state = value;
+            BlockSelectionChanged(_coordinate, fromState, _state);
         }
     }
     
@@ -72,12 +70,10 @@ public class BlockState
         get { return _colorID; }
         set
         {
-            if (_colorID != value)
-            {
-                int fromColorID = _colorID;
-                _colorID = value;
-                BlockColorIDChanged(coordinate,fromColorID,colorID);
-            }
+            if (_colorID == value) return;
+            int fromColorID = _colorID;
+            _colorID = value;
+            BlockColorIDChanged(coordinate,fromColorID,colorID);
         }
     }
     
