@@ -35,7 +35,7 @@ public class Board : MonoBehaviour
 			for (int y = 0; y < Game.boardHeight; y++)
 			{
 				_blockInstances[x, y] = (Instantiate(_blockPrefab) as GameObject).GetComponent<Block>();
-				_blockInstances[x,y].Init(new BlockCoordinate(x,y));
+				_blockInstances[x,y].Init(new BlockCoordinate(x,y),this);
 				_blockInstances[x,y].transform.SetParent(_myTransform);
 			}	
 		}
@@ -70,47 +70,69 @@ public class Board : MonoBehaviour
 	
 	void OnPointerEnterBlockEvent(BlockCoordinate coord)
 	{
-		if (_pointerPressed)
+		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
 		{
-			//A new block is selectable only if is from the current selecting color
-			if (_game.gameState.board[coord.x, coord.y].colorID == _game.gameState.selectingColorID)
+			if (_pointerPressed)
 			{
-				//If new block is already in the selected queue
-				//unselect until this block.
-				if (_game.gameState.SelectedContains(coord))
+				//A new block is selectable only if is from the current selecting color
+				if (_game.gameState.board[coord.x, coord.y].colorID == _game.gameState.selectingColorID)
 				{
-					_game.gameState.UnselectUntilBlockCoord(coord);
-				}
-				//Otherwise is a new block 
-				else
-				{
-					//Select only if is neighbor from the last selected block 
-					if(_game.gameState.LastBlockSelected().IsHexNeighbor(coord))
-						_game.gameState.SelectBlock(coord);	
+					//If new block is already in the selected queue
+					//unselect until this block.
+					if (_game.gameState.SelectedContains(coord))
+					{
+						_game.gameState.UnselectUntilBlockCoord(coord);
+					}
+					//Otherwise is a new block 
+					else
+					{
+						//Select only if is neighbor from the last selected block 
+						if (_game.gameState.LastBlockSelected().IsHexNeighbor(coord))
+							_game.gameState.SelectBlock(coord);
+					}
 				}
 			}
-		}
-		else
-		{
-			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Over;
+			else
+			{
+				_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Over;
+			}
 		}
 	}
 	void OnPointerExitBlockEvent(BlockCoordinate coord)
 	{
-		if (!_pointerPressed)
+		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
 		{
-			_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+			if (!_pointerPressed)
+			{
+				_game.gameState.board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+			}
 		}
 	}
 	void OnPointerDownBlockEvent(BlockCoordinate coord)
 	{
-		_game.gameState.SelectBlock(coord);
+		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
+		{
+			_game.gameState.SelectBlock(coord);
+		}
 	}
 	void OnPointerUpBlockEvent(BlockCoordinate coord)
 	{
-		_game.gameState.EndSelection();	
+		if (_game.gameState.board[coord.x, coord.y].selectionState != BlockState.SelectionState.InAnimation)
+		{
+			_game.gameState.EndSelection();
+		}
 	}
-
+	/// <summary>
+	/// If the upwards block exists returns the up neighbour one
+	/// otherwise create a new one on top of the block on coord
+	/// </summary>
+	/// <param name="coord"></param>
+	/// <returns>Graphics 3D Cube to make the fall animation</returns>
+	Block GetUpwardsBlock(BlockCoordinate coord)
+	{
+		//TODO
+		return null;
+	}
 	void Update()
 	{
 		if (Input.GetMouseButtonDown(0))

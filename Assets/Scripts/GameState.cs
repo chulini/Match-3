@@ -7,6 +7,20 @@ using UnityEngine;
 /// </summary>
 public class GameState
 {   
+
+    public delegate void NewLineDelegate(bool success, List<BlockCoordinate> blocksInTheLine);
+    public static event NewLineDelegate NewLineEvent;
+    /// <summary>
+    /// Triggers an event when a new line is finished
+    /// </summary>
+    /// <param name="success">If the line have more than 3 blocks</param>
+    /// <param name="blocksInTheLine">The blocks of the line</param>
+    static void NewLine(bool success, List<BlockCoordinate> blocksInTheLine){
+        if(NewLineEvent != null)
+            NewLineEvent(success,blocksInTheLine);
+    }
+    
+    
     readonly BlockState[,] _board;
     public BlockState[,] board
     {
@@ -111,17 +125,46 @@ public class GameState
         }
     }
 
+    /// <summary>
+    /// Returns if coord is in the selection stack
+    /// </summary>
+    /// <param name="coord">Coordinate to be tested</param>
+    /// <returns></returns>
     public bool SelectedContains(BlockCoordinate coord)
     {
         return _selectedBlocks.Contains(coord);
-    } 
+    }
+    
     public void EndSelection()
     {
-        while (_selectedBlocks.Count > 0)
+        //If 3 or more blocks are selected, change the colorID, add score and trigger a success line event
+        //Otherwise deselect all and trigger a failed line event
+        if (_selectedBlocks.Count >= 3)
         {
-            BlockCoordinate coord =_selectedBlocks.Pop();
-            _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+            _score += _selectedBlocks.Count;
+            //Make a list with the selected block to send an event with them
+            List<BlockCoordinate> blocksInTheLine = new List<BlockCoordinate>();
+            while (_selectedBlocks.Count > 0)
+            {
+                BlockCoordinate coord =_selectedBlocks.Pop();
+                _board[coord.x, coord.y].colorID = 0;
+                _board[coord.x, coord.y].selectionState = BlockState.SelectionState.InAnimation;
+                blocksInTheLine.Add(coord);
+            }
+            NewLine(true,blocksInTheLine);
         }
+        else
+        {
+            List<BlockCoordinate> blocksInTheLine = new List<BlockCoordinate>();
+            while (_selectedBlocks.Count > 0)
+            {
+                BlockCoordinate coord =_selectedBlocks.Pop();
+                _board[coord.x, coord.y].selectionState = BlockState.SelectionState.Waiting;
+                blocksInTheLine.Add(coord);
+            }    
+            NewLine(false,blocksInTheLine);
+        }
+        
     }
 
     public BlockCoordinate LastBlockSelected()

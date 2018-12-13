@@ -7,29 +7,29 @@ using UnityEngine;
 /// </summary>
 public class BlockState
 {
+    
+    public delegate void BlockColorIDChangedDelegate(BlockCoordinate coord, int fromColorID, int toColorID);
+    public static event BlockColorIDChangedDelegate BlockColorIDChangedEvent;
     /// <summary>
-    /// To send an event when a block colorID is changed
-    /// Event System made by my own tool here:
-    /// https://github.com/chulini/unity-quick-events
+    /// Triggers an event when a block colorID is changed
     /// </summary>
     /// <param name="coord">Coordinate of the block</param>
     /// <param name="fromColorID">Last Color ID</param>
     /// <param name="toColorID">New Color ID</param>
-    public delegate void BlockColorIDChangedDelegate(BlockCoordinate coord, int fromColorID, int toColorID);
-    public static event BlockColorIDChangedDelegate BlockColorIDChangedEvent;
     static void BlockColorIDChanged(BlockCoordinate coord, int fromColorID, int toColorID){
         if(BlockColorIDChangedEvent != null)
             BlockColorIDChangedEvent(coord,fromColorID,toColorID);
     }
     
+    
+    public delegate void BlockSelectionChangedDelegate(BlockCoordinate coord, SelectionState fromSelectionState, SelectionState toSelectionState);
+    public static event BlockSelectionChangedDelegate BlockSelectionChangedEvent;
     /// <summary>
-    /// To send an event when a block colorID is changed
+    /// Triggers an event when a block colorID is changed
     /// </summary>
     /// <param name="coord">Coordinate of the block</param>
     /// <param name="fromSelectionState">Last selection state</param>
     /// <param name="toSelectionState">New selection state</param>
-    public delegate void BlockSelectionChangedDelegate(BlockCoordinate coord, SelectionState fromSelectionState, SelectionState toSelectionState);
-    public static event BlockSelectionChangedDelegate BlockSelectionChangedEvent;
     static void BlockSelectionChanged(BlockCoordinate coord, SelectionState fromSelectionState, SelectionState toSelectionState){
         if(BlockSelectionChangedEvent != null)
             BlockSelectionChangedEvent(coord,fromSelectionState,toSelectionState);
@@ -40,8 +40,9 @@ public class BlockState
     /// Waiting (waiting for interaction)
     /// Selected (Selected to make the line)
     /// Over (With the mouse over)
+    /// InAnimation (The block is being animated)
     /// </summary>
-    public enum SelectionState{Waiting, Selected, Over}
+    public enum SelectionState{Waiting, Selected, Over, InAnimation}
     
     /// <summary>
     /// Current selection state
@@ -57,9 +58,11 @@ public class BlockState
                 SelectionState fromSelectionState = _selectionState;
                 _selectionState = value;
                 BlockSelectionChanged(_coordinate, fromSelectionState, _selectionState);
+                
             }
         }
     }
+    
     /// <summary>
     /// The current color of the block
     /// </summary>

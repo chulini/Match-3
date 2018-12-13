@@ -31,14 +31,14 @@ public class Block : MonoBehaviour
 	static Material[] _blockMaterials;
 
 	BlockCoordinate _myCoordinate;
-
 	public BlockCoordinate myCoordinate
 	{
 		get { return _myCoordinate; }
 	}
 	Transform _myTransform;
 	float _targetScale = .9f;
-	
+	Vector3 _positionInHexGid;
+	Board _board;
 	void Awake()
 	{
 		if (_blockMaterials == null)
@@ -47,8 +47,9 @@ public class Block : MonoBehaviour
 		_myTransform = GetComponent<Transform>();
 	}
 
-	public void Init(BlockCoordinate coord)
+	public void Init(BlockCoordinate coord, Board board)
 	{
+		_board = board;
 		_myCoordinate = coord;
 		// Set the block in the position using _myCoordinate using hexagonal grid
 		//	AXISES
@@ -59,29 +60,32 @@ public class Block : MonoBehaviour
 		//	|
 		//	0-------> X
 		float yOffset = (_myCoordinate.x % 2 == 0) ? 0 : vSeparation;
-		_myTransform.position = new Vector3(_myCoordinate.x * hSeparation * 1.5f, _myCoordinate.y * vSeparation * 2f+yOffset);
+		_positionInHexGid = new Vector3(_myCoordinate.x * hSeparation * 1.5f, _myCoordinate.y * vSeparation * 2f+yOffset);
+		_myTransform.position = _positionInHexGid;
+		_bgBlockMeshTransform.localScale = Vector3.zero;
 	}
 
 	void OnEnable()
 	{
 		BlockState.BlockColorIDChangedEvent += OnBlockColorIDChangedEvent;
 		BlockState.BlockSelectionChangedEvent += OnBlockSelectionChangedEvent;
+		GameState.NewLineEvent += OnNewLineEvent;
 	}
-
+	
 	void OnDisable()
 	{
 		BlockState.BlockColorIDChangedEvent-= OnBlockColorIDChangedEvent;
 		BlockState.BlockSelectionChangedEvent -= OnBlockSelectionChangedEvent;
+		GameState.NewLineEvent -= OnNewLineEvent;
 	}
 
 	void OnBlockColorIDChangedEvent(BlockCoordinate coord, int fromColorID, int toColorID)
 	{
 		if (coord == _myCoordinate)
 		{
-			_bgBlockMeshRenderer.sharedMaterial = _blockMaterials[toColorID];
+			if(toColorID != 0)
+				_bgBlockMeshRenderer.sharedMaterial = _blockMaterials[toColorID];
 			
-			//TODO make fall animation when fromColorID == 0
-			//TODO make pop animation when toColor == 0
 		}
 	}
 	void OnBlockSelectionChangedEvent(BlockCoordinate coord, BlockState.SelectionState fromSelectionState, BlockState.SelectionState toSelectionState)
@@ -108,6 +112,36 @@ public class Block : MonoBehaviour
 		}
 	}
 
+	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine)
+	{
+		if (success)
+		{
+			for (int i = 0; i < blocksInTheLine.Count; i++)
+				if (blocksInTheLine[i] == myCoordinate)
+					StartCoroutine(ExplodeAnimation(.3f));
+		}
+	}
+	IEnumerator ExplodeAnimation(float duration)
+	{
+		_borderMeshRenderer.enabled = false;
+		_targetScale = .7f;
+		float t0 = Time.time;
+		float r = 0;
+		do
+		{
+			r = (Time.time - t0) / duration;
+			_bgBlockMeshTransform.position = _positionInHexGid 
+			                                 + new Vector3(Random.Range(-1f,1f)*r*.2f,Random.Range(-1f,1f)*r*.2f,0);
+			yield return null;
+		} while (r < 1f);
+		
+		_bgBlockMeshTransform.localScale = Vector3.zero;
+		_targetScale = 0;
+		
+		//TODO trigger pop audio fx
+		//TODO get upwards block
+		
+	}
 	void Update()
 	{
 		_bgBlockMeshTransform.localScale =
