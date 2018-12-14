@@ -11,6 +11,7 @@ using UnityEngine;
 public class Board : MonoBehaviour
 {
 	[SerializeField] GameObject _blockPrefab;
+	
 	static Game _game;
 	static Block[,] _blockInstances;
 	static Transform _myTransform;

@@ -23,10 +23,6 @@ public class AudioEffects : MonoBehaviour
 		GameState.SelectedLineChangedEvent += OnSelectedLineChangedEvent;
 		GameState.NewLineEvent += OnNewLineEvent;
 	}
-
-	
-
-
 	void OnDisable()
 	{	
 		GameState.SelectedLineChangedEvent -= OnSelectedLineChangedEvent;
@@ -35,7 +31,7 @@ public class AudioEffects : MonoBehaviour
 	
 	
 	
-	void OnSelectedLineChangedEvent(List<BlockCoordinate> selectedBlocks)
+	void OnSelectedLineChangedEvent(List<BlockCoordinate> selectedBlocks, int lineColorID)
 	{
 		
 		_myAudioSource.pitch = GetPentatonicPitch(selectedBlocks.Count-1);
@@ -45,9 +41,12 @@ public class AudioEffects : MonoBehaviour
 
 	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine, int newScore)
 	{
-		_myAudioSource.pitch = 1f;
-		_myAudioSource.volume = .2f;
-		_myAudioSource.PlayOneShot(_lineAudioClip);
+		if (success)
+		{
+			_myAudioSource.pitch = 1f;
+			_myAudioSource.volume = .2f;
+			_myAudioSource.PlayOneShot(_lineAudioClip);
+		}
 	}
 	
 	float GetPentatonicPitch(int index)

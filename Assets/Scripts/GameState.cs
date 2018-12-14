@@ -9,15 +9,16 @@ using UnityEngine;
 public class GameState
 {   
     
-    public delegate void SelectedLineChangedDelegate(List<BlockCoordinate> selectedBlocks);
+    public delegate void SelectedLineChangedDelegate(List<BlockCoordinate> selectedBlocks, int lineColorID);
     public static event SelectedLineChangedDelegate SelectedLineChangedEvent;
     /// <summary>
     /// Triggers an event when the selected line has been modified 
     /// </summary>
     /// <param name="selectedBlocks">List of selected blocks</param>
-    static void SelectedLineChanged(List<BlockCoordinate> selectedBlocks){
+    /// /// <param name="lineColorID">ColorID of the line being made</param>
+    static void SelectedLineChanged(List<BlockCoordinate> selectedBlocks, int lineColorID){
         if(SelectedLineChangedEvent != null)
-            SelectedLineChangedEvent(selectedBlocks);
+            SelectedLineChangedEvent(selectedBlocks,lineColorID);
     }
 
     
@@ -141,7 +142,7 @@ public class GameState
                 _selectingColorID = _board[coord.x, coord.y].colorID;
             
             
-            SelectedLineChanged(_selectedBlocks.ToList());
+            SelectedLineChanged(_selectedBlocks.ToList(),_selectingColorID);
         }
     }
 
@@ -170,7 +171,7 @@ public class GameState
             if (_selectedBlocks.Count == 0)
                 _selectingColorID = 0;
             
-            SelectedLineChanged(_selectedBlocks.ToList());
+            SelectedLineChanged(_selectedBlocks.ToList(),_selectingColorID);
         }
         else
         {

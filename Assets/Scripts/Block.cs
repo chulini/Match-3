@@ -39,6 +39,10 @@ public class Block : MonoBehaviour
 	[SerializeField] Material borderOverMaterial;
 	
 	static Material[] _blockMaterials;
+	public static Material[] blockMaterials
+	{
+		get { return _blockMaterials; }
+	}
 
 	
 	BlockCoordinate _myCoordinate;
@@ -79,7 +83,7 @@ public class Block : MonoBehaviour
 		}
 	}
 
-	Vector3 Get3DPositionForCoordinate(BlockCoordinate coord)
+	public static Vector3 Get3DPositionForCoordinate(BlockCoordinate coord)
 	{
 		// Set the block in the position using hexagonal grid
 		//	AXISES
@@ -89,8 +93,8 @@ public class Block : MonoBehaviour
 		//	|
 		//	|
 		//	0-------> X
-		float yOffset = (_myCoordinate.x % 2 == 0) ? 0 : vSeparation;
-		return new Vector3(_myCoordinate.x * hSeparation * 1.5f, _myCoordinate.y * vSeparation * 2f+yOffset);
+		float yOffset = (coord.x % 2 == 0) ? 0 : vSeparation;
+		return new Vector3(coord.x * hSeparation * 1.5f, coord.y * vSeparation * 2f+yOffset);
 	}
 
 
@@ -105,10 +109,6 @@ public class Block : MonoBehaviour
 		{
 			DestroyImmediate(_bgColorGameObject);
 			UnlinkBgColor();
-		}
-		else
-		{
-			Debug.Log(myCoordinate+ " Can't destroy bg");
 		}
 	}
 
