@@ -6,7 +6,7 @@ The repository can be found in https://github.com/chulini/Match-3/
 
 ## Software Architecture
 Similar to a Model/View/Controller pattern the game architecture is splited in State/View/Logic class types.
-The communication between the different class types is using an system of events.
+The communication between the different class types is using an event system.
 
 (The event system was made using this tool https://github.com/chulini/unity-quick-events)
 ### State Classes
