@@ -147,7 +147,7 @@ public class Board : MonoBehaviour
 	}
 
 	
-	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine)
+	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine, int newScore)
 	{
 		if(success)
 			_animatingBlocks = blocksInTheLine;

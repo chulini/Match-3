@@ -19,7 +19,7 @@ public class UIManager : MonoBehaviour
 	[SerializeField] UIAnimatedText gameOverText;
 	[SerializeField] Button playButton;
 	
-	GameState _gameState;
+	
 
 	void Awake()
 	{
@@ -30,14 +30,9 @@ public class UIManager : MonoBehaviour
 		});
 	}
 
-	public void Init(GameState gameState)
-	{
-		_gameState = gameState;
-	}
-
 	IEnumerator Start()
 	{
-		yield return new WaitForSeconds(.5f);
+		yield return new WaitForSeconds(.1f);
 		gameplayCanvasSwitcher.Show();
 	}
 
@@ -56,20 +51,19 @@ public class UIManager : MonoBehaviour
 	}
 	void OnGameOverEvent()
 	{
-		Debug.Log("GAME OVER");
 		gameplayCanvasSwitcher.Hide();
 		gameOverCanvasSwitcher.Show();
 		gameOverText.NewTextAnimated("Game Over");
 	}
-	
-	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine)
+
+	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine, int newScore)
 	{
 		if (success)
 		{
-			scoreText.NewTextAnimated( _gameState.score.ToString("N0"));
+			scoreText.NewTextAnimated(newScore.ToString("N0"));
 		}
 	}
-	
+
 	void OnRemainingMovesUpdatedEvent(int remainingMoves)
 	{
 		string moves = "";

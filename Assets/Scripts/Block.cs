@@ -190,7 +190,7 @@ public class Block : MonoBehaviour
 		}
 	}
 
-	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine)
+	void OnNewLineEvent(bool success, List<BlockCoordinate> blocksInTheLine, int newScore)
 	{
 		if (success)
 		{

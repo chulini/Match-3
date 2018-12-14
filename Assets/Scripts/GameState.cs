@@ -4,22 +4,37 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Contains the logic state of the game
+/// Contains the logic state of the game and send relevant events 
 /// </summary>
 public class GameState
 {   
+    
+    public delegate void SelectedLineChangedDelegate(List<BlockCoordinate> selectedBlocks);
+    public static event SelectedLineChangedDelegate SelectedLineChangedEvent;
+    /// <summary>
+    /// Triggers an event when the selected line has been modified 
+    /// </summary>
+    /// <param name="selectedBlocks">List of selected blocks</param>
+    static void SelectedLineChanged(List<BlockCoordinate> selectedBlocks){
+        if(SelectedLineChangedEvent != null)
+            SelectedLineChangedEvent(selectedBlocks);
+    }
 
-    public delegate void NewLineDelegate(bool success, List<BlockCoordinate> blocksInTheLine);
+    
+    public delegate void NewLineDelegate(bool success, List<BlockCoordinate> blocksInTheLine, int newScore);
     public static event NewLineDelegate NewLineEvent;
+
     /// <summary>
     /// Triggers an event when a new line is finished
     /// </summary>
     /// <param name="success">If the line have more than 3 blocks</param>
     /// <param name="blocksInTheLine">The blocks of the line</param>
-    static void NewLine(bool success, List<BlockCoordinate> blocksInTheLine){
+    /// /// <param name="newScore">The new score after the line</param>
+    public static void NewLine(bool success, List<BlockCoordinate> blocksInTheLine, int newScore){
         if(NewLineEvent != null)
-            NewLineEvent(success,blocksInTheLine);
+            NewLineEvent(success,blocksInTheLine,newScore);
     }
+    
     
     public delegate void RemainingMovesUpdatedDelegate(int remainingMoves);
     public static event RemainingMovesUpdatedDelegate RemainingMovesUpdatedEvent;
@@ -43,9 +58,6 @@ public class GameState
         if(GameOverEvent != null)
             GameOverEvent();
     }
-
-    
-    
 
     
     readonly BlockState[,] _board;
@@ -110,7 +122,11 @@ public class GameState
         _board[coord.x, coord.y].colorID = colorID;
         
     }
-
+    
+    /// <summary>
+    /// Adds a BlockCoordinate to the selection stack
+    /// </summary>
+    /// <param name="coord">Added coord</param>
     public void SelectBlock(BlockCoordinate coord)
     {
         if (!_selectedBlocks.Contains(coord))
@@ -119,9 +135,13 @@ public class GameState
             _selectedBlocks.Push(coord);
             _board[coord.x, coord.y].state = BlockState.State.Selected;
             
+            
             //If is the first selected set selecting color as the color of the selected block
             if (_selectedBlocks.Count == 1)
                 _selectingColorID = _board[coord.x, coord.y].colorID;
+            
+            
+            SelectedLineChanged(_selectedBlocks.ToList());
         }
     }
 
@@ -149,6 +169,8 @@ public class GameState
             //If there is no remaining blocks selected, set _selectingColorID as 0  
             if (_selectedBlocks.Count == 0)
                 _selectingColorID = 0;
+            
+            SelectedLineChanged(_selectedBlocks.ToList());
         }
         else
         {
@@ -187,7 +209,7 @@ public class GameState
             }
 
             MarkUpwardsBlocksAsWaitingForNewColor(blocksInTheLine);
-            NewLine(true,blocksInTheLine);
+            NewLine(true,blocksInTheLine,_score);
 
             if (_remainingMoves == 0)
                 GameOver();
@@ -201,7 +223,7 @@ public class GameState
                 _board[coord.x, coord.y].state = BlockState.State.Waiting;
                 blocksInTheLine.Add(coord);
             }    
-            NewLine(false,blocksInTheLine);
+            NewLine(false,blocksInTheLine,_score);
         }
         
     }

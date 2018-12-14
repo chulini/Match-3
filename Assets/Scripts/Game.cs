@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Contains the global definitions of the game,
@@ -11,9 +12,9 @@ public class Game : MonoBehaviour
 {
 	public const int boardWidth = 7;
 	public const int boardHeight = 6;
-	public const int remainingMovesAtStart = 1;
+	public const int remainingMovesAtStart = 20;
 	public const int totalColorIDs = 4;
-	[SerializeField] UIManager _uiManager;
+	
 	GameState _gameState;
 	public GameState gameState
 	{
@@ -23,14 +24,11 @@ public class Game : MonoBehaviour
 	static Board _board;
 	void Awake()
 	{
-		if(_gameState == null)
-			_gameState = new GameState();
-		
+		_gameState = new GameState();
 		_gameState.Reset();
 		_board = GetComponent<Board>();
 		_board.Init(this);
-		_uiManager.Init(gameState);
-		
+		SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
 	}
 
 }
