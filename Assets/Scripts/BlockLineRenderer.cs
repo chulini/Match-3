@@ -44,11 +44,15 @@ public class BlockLineRenderer : MonoBehaviour
             _firstCoord = selectedBlocks[0];
             _myLineRenderer.sharedMaterial = Block.blockMaterials[lineColorID];
         }
-        _myLineRenderer.positionCount = selectedBlocks.Count;
-        Vector3[] newPositions = new Vector3[selectedBlocks.Count];
+        
+        //Vertex of the line renderer should be triplicated so the width of the line doesn't change
+        _myLineRenderer.positionCount = selectedBlocks.Count*3;
+        Vector3[] newPositions = new Vector3[selectedBlocks.Count*3];
         for (int i = 0; i < selectedBlocks.Count; i++)
         {
-            newPositions[i] = Block.Get3DPositionForCoordinate(selectedBlocks[i]) + Vector3.back * 5f;
+            newPositions[3*i] = Block.Get3DPositionForCoordinate(selectedBlocks[i]) + Vector3.back * 5f;
+            newPositions[3*i+1] = Block.Get3DPositionForCoordinate(selectedBlocks[i]) + Vector3.back * 5f;
+            newPositions[3*i+2] = Block.Get3DPositionForCoordinate(selectedBlocks[i]) + Vector3.back * 5f;
         }
         
         _myLineRenderer.SetPositions(newPositions);

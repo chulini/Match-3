@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// In charge of listening to game events and update the UI
+/// UIManager is in charge of listening to game events and update the UI
 /// </summary>
 public class UIManager : MonoBehaviour
 {
@@ -16,10 +16,9 @@ public class UIManager : MonoBehaviour
 	
 	[Header("Game Over")]
 	[SerializeField] UICanvasSwitcher gameOverCanvasSwitcher;
+	[SerializeField] UIAnimatedText gameOverScoreText;
 	[SerializeField] UIAnimatedText gameOverText;
 	[SerializeField] Button playButton;
-	
-	
 
 	void Awake()
 	{
@@ -60,7 +59,19 @@ public class UIManager : MonoBehaviour
 	{
 		if (success)
 		{
-			scoreText.NewTextAnimated(newScore.ToString("N0"));
+			
+			gameOverScoreText.NewTextAnimated(newScore.ToString("N0"));
+			
+			if (newScore > PlayerPrefs.GetInt("max-score"))
+			{
+				PlayerPrefs.SetInt("max-score", newScore);
+				gameOverScoreText.NewTextAnimated(newScore.ToString("N0") + "\t New Record!");
+			}
+			else
+			{
+				scoreText.NewTextAnimated(newScore.ToString("N0"));	
+			}
+			
 		}
 	}
 

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e3f05336dd2f7f742955e08a3b965b63
+guid: e2204a5ba0646934495770ec631cb5ca
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -8,9 +8,9 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Varela Round
+  fontName: Teko
   fontNames:
-  - Varela Round
+  - Teko
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
